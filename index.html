@@ -299,7 +299,7 @@
 <div class="shell">
   <aside class="rail" id="rail" aria-label="Vault menu">
     <div class="brand">
-      <div class="brand-name">Engagement <em>Vault</em></div>
+      <div class="brand-name" id="brandName">Engagement <em>Vault</em></div>
       <div class="brand-tag">Posts that get people talking</div>
     </div>
     <nav class="nav" id="viewNav"></nav>
@@ -368,7 +368,7 @@
       <header class="hero">
         <div class="eyebrow">Start here</div>
         <h1>Make It <em>Yours</em></h1>
-        <p id="mkIntro">Turn this whole vault into your own, written for your people, in your voice, with your teaching woven through every post.</p>
+        <p id="mkIntro">Make this vault yours. Every post rewritten with your essence, for your ideal clients, with your teaching woven through it.</p>
       </header>
       <div class="mk" id="mkBody"></div>
     </section>
@@ -582,6 +582,9 @@ const WEEK_RITUALS = {
   var SHELF_LABEL = { "She Sells": "She Sells™" };
   /* Which version of the vault this is: "premium", "vip" or "custom" (a VIP's own rewritten copy). */
   var EDITION = "premium";
+  /* The vault's name and the community it belongs to. A rebrand changes these. */
+  var VAULT_NAME = "Engagement Vault";
+  var COMMUNITY_NAME = "She Promotes\u2122";
   var UPGRADE_URL = "https://www.skool.com/she-promotes-7924/plans";
 
   var VIEWS = [
@@ -589,7 +592,7 @@ const WEEK_RITUALS = {
     { id: "browse", label: "Browse posts", mark: "▦" },
     { id: "rhythm", label: "Weekly rhythm", mark: "↻" },
   ];
-  if (EDITION === "custom") VIEWS = VIEWS.filter(function (v) { return v.id !== "make-it-yours"; });
+  if (EDITION === "custom") { var mkc = VIEWS.shift(); VIEWS.push({ id: mkc.id, label: "Make it yours", mark: "\u2726" }); }
   if (EDITION === "premium") {
     var mkv = VIEWS.shift();
     VIEWS.push({ id: mkv.id, label: "Make it yours", mark: "\u2726", vip: true });
@@ -733,7 +736,7 @@ const WEEK_RITUALS = {
       if (el.tagName === "SECTION") el.hidden = el.getAttribute("data-view") !== v;
     });
     var label = VIEWS.filter(function (x) { return x.id === v; })[0].label;
-    $("topTitle").textContent = v === "browse" ? "Engagement Vault" : label.replace("Start here: ", "");
+    $("topTitle").textContent = v === "browse" ? VAULT_NAME : label.replace("Start here: ", "");
     if (v === "browse") renderPosts();
     if (v === "week") renderWeek();
     if (v === "rhythm") renderRhythm();
@@ -808,15 +811,19 @@ const WEEK_RITUALS = {
     "Grow Your Skool": "Tips for building an active, growing community. Post them for your members, or use them as your own checklist.",
     "Saved": "The posts you've saved with ♡. They're saved in this browser, so they'll be here next time you open the vault."
   };
+  function nameHtml(n, the) {
+    var w = String(n).trim().split(/\s+/), last = w.pop();
+    return (the && w.length && !/^the$/i.test(w[0]) ? "The " : "") + esc(w.join(" ")) + (w.length ? " " : "") + "<em>" + esc(last) + "</em>";
+  }
   function renderHero() {
     var s = activeShelf, n;
     if (s === "All") n = POSTS.length;
     else if (s === "Saved") n = store.fav.length;
     else n = POSTS.filter(function (p) { return p.shelf === s; }).length;
     $("shelfEyebrow").textContent = s === "All" ? "Copy, fill in the [brackets], post" : n + (n === 1 ? " post" : " posts");
-    $("shelfTitle").innerHTML = s === "All" ? 'The Engagement <em>Vault</em>' : (s === "Saved" ? 'Your <em>Saved</em> posts' : esc(shelfName(s)));
+    $("shelfTitle").innerHTML = s === "All" ? nameHtml(VAULT_NAME, true) : (s === "Saved" ? 'Your <em>Saved</em> posts' : esc(shelfName(s)));
     $("shelfDesc").textContent = SHELF_INFO[s] || SHELF_INFO.All;
-    $("heroNote").hidden = s !== "All" || EDITION === "custom";
+    $("heroNote").hidden = s !== "All";
   }
 
   function renderPosts() {
@@ -1137,11 +1144,11 @@ const WEEK_RITUALS = {
 
   /* ---------- make it yours ---------- */
   var MK_FIELDS = [
-    { id: "mkWho", key: "who", label: "Who is your community for?", hint: "Be specific. Who they are and where they are right now.", ph: "e.g. new hypnotherapists who are certified but still don't have steady clients", area: true },
+    { id: "mkWho", key: "who", label: "Who is your ideal client?", hint: "Be specific. Who they are, what they're going through, and where they are right now.", ph: "e.g. new hypnotherapists who are certified but still don't have steady clients", area: true },
     { id: "mkHelp", key: "help", label: "What do you help them with?", hint: "The result they come to you for, and your main offer if you have one.", ph: "e.g. book their first 10 paying clients without living on social media. My main offer is a 12 week group program.", area: true },
     { id: "mkDepth", key: "depth", label: "Your depth of work", hint: "What you teach, your methods or frameworks, your training and experience. This is what makes the posts sound like an expert wrote them.", ph: "e.g. I'm a clinical hypnotherapist with 8 years in practice. I teach a simple 3 step referral method and I use Human Design to help people price their offers.", area: true },
     { id: "mkWant", key: "want", label: "What do you want the vault to do for you?", hint: "More comments, more upgrades, more collabs, a gentler tone? Anything you'd like more or less of.", ph: "e.g. get my quiet members commenting, and lead people toward my paid tier without sounding salesy", area: true },
-    { id: "mkVoice", key: "voice", label: "How do you sound?", hint: "A few words, plus any words you love or never use.", ph: "e.g. warm, a little funny, straight talking. I say \"my loves\" a lot. I never say \"hustle\".", area: false },
+    { id: "mkVoice", key: "voice", label: "Your essence and voice", hint: "How you sound, and how you want people to feel around you. Add any words you love or never use.", ph: "e.g. warm, grounded and a little funny. I want people to feel safe and seen. I say \"my loves\" a lot. I never say \"hustle\".", area: true },
     { id: "mkSample", key: "sample", label: "Paste 1 or 2 of your own posts (optional, but it helps a lot)", hint: "Posts that did well and sound most like you. The AI learns your voice from these.", ph: "Paste a post here", area: true },
     { id: "mkTeach", key: "teaching", label: "Name of your signature teaching (optional)", hint: "This replaces She Sells™ on the teaching button in every post.", ph: "e.g. The Referral Rhythm", area: false }
   ];
@@ -1149,60 +1156,115 @@ const WEEK_RITUALS = {
   MK_FIELDS.forEach(function (f) { mk[f.key] = ""; });
   function val(k, fallback) { var v = (mk[k] || "").trim(); return v || fallback; }
 
+  var mkMode = "full";
+  var BRAND_FIELDS = [
+    { id: "mkName", key: "vname", label: "Name for your vault (optional)", hint: "Keep Engagement Vault, or give it your own name.", ph: "e.g. The Connection Vault" },
+    { id: "mkCommunity", key: "community", label: "Your community name", hint: "It shows at the bottom of every page.", ph: "e.g. The Healing Circle" },
+    { id: "mkLessons", key: "lessons", label: "Name for the selling lessons (optional)", hint: "Replaces She Sells\u2122 everywhere. Leave it blank and it becomes The Psychology of Selling.", ph: "e.g. Sell From the Heart" },
+    { id: "mkColors", key: "colors", label: "Your brand colors (optional)", hint: "Color names or hex codes. Leave it blank to keep these colors.", ph: "e.g. sage green, cream and gold, or #7a9e7e, #f5efe6, #c9a24b" }
+  ];
+  BRAND_FIELDS.forEach(function (f) { mk[f.key] = ""; });
+
+  function brandLines() {
+    var name = val("vname", ""), comm = val("community", "[your community name]"), colors = val("colors", "");
+    return "MY BRANDING\n" +
+      "- Community name: " + comm + ". In the script, set COMMUNITY_NAME to it.\n" +
+      (name ? "- Vault name: " + name + ". In the script, set VAULT_NAME to it, and change the <title> tag and the topbar and menu names to match.\n" : "- Keep the vault name as it is.\n") +
+      (colors ? "- Brand colors: " + colors + ". Restyle the color tokens in the :root block at the top of the CSS to fit my colors. Keep text easy to read on every background, and keep the page looking clean and calm.\n" : "- Keep the colors as they are.\n") +
+      "- Set EDITION to \"custom\" in the script.\n" +
+      "- Lessons name: rename every \"She Sells\u2122\" in the file to \"" + val("lessons", "The Psychology of Selling") + "\". That includes TEACHING_NAME, SHELF_LABEL, SHELF_INFO, the PLAYBOOK, and the lesson labels inside the posts (some are written in bold letters, so change those too and keep them bold).\n" +
+      "- Remove every mention of She Promotes\u2122 and Aurailia from the page, including the footer and the default COMMUNITY_NAME. The footer should only show my community name.\n";
+  }
+
   function mkPrompt(preview) {
+    var common =
+      "\nRULES\n" +
+      "- Edit the file directly with your file tools and give me the finished HTML file to download. Don't paste the code into the chat.\n" +
+      "- Keep every id, shelf, category, field name and the structure of the file as it is.\n" +
+      "- Make sure the file still opens and works in a browser.\n";
+    if (mkMode === "light") {
+      return "I'm attaching an HTML file called the Engagement Vault. It's a library of engagement posts for an online community. I want to use it in my community as is, with my own branding.\n\n" +
+        brandLines() + "- Apart from the lessons name, don't change any of the posts.\n" + common + "- Tell me what you changed when you're done.";
+    }
     var teaching = val("teaching", "");
-    return "I'm attaching an HTML file called the Engagement Vault. It's a library of engagement posts for an online community. I want you to rewrite it so it's mine, written for my members, in my voice, with my expertise woven through it.\n\n" +
+    return "I'm attaching an HTML file called the Engagement Vault. It's a library of engagement posts for an online community. I want you to completely rebrand it so it's mine, written with my essence for my ideal clients, in my voice, with my expertise woven through it.\n\n" +
+      brandLines() + "\n" +
       "ABOUT ME AND MY COMMUNITY\n" +
-      "Who my community is for: " + val("who", "[who your community is for]") + "\n" +
+      "My ideal client: " + val("who", "[who your ideal client is]") + "\n" +
       "What I help them with: " + val("help", "[what you help them with]") + "\n" +
       "My depth of work: " + val("depth", "[what you teach, your methods, your experience]") + "\n" +
       "What I want the vault to do for me: " + val("want", "[more comments, upgrades, collabs...]") + "\n" +
-      "How I sound: " + val("voice", "[your voice]") + "\n" +
+      "My essence and voice: " + val("voice", "[your essence and voice]") + "\n" +
       (val("sample", "") ? "\nHere are posts I wrote, so you can learn my voice:\n" + val("sample", "") + "\n" : "") +
       (teaching ? "\nMy signature teaching is called: " + teaching + "\n" : "") +
-      "\nWHAT TO CHANGE\n" +
+      "\nWHAT TO CHANGE IN THE POSTS\n" +
       "Inside the file's script is a list called POSTS and a list called RITUAL_POSTS. Each post has text in these fields: headline, deep (the post itself), why, gif and scene. Some also have pollOptions, intro, prompt, brief and notesPh.\n" +
       "Rewrite the text in those fields so every post speaks to my members, sounds like me, and draws on my depth of work. Keep what each post is for, and keep the sales psychology lesson in each one, but explain it with examples from my world.\n" +
-      "Also in the script, set EDITION to \"custom\"" + (teaching ? ", set TEACHING_NAME to my teaching name, and rewrite TEACHING_DESC as one sentence describing my teaching" : "") + ".\n" +
-      "\nRULES\n" +
-      "- Edit the file directly with your file tools and give me the finished HTML file to download. Don't paste the code into the chat.\n" +
+      (teaching ? "Set TEACHING_NAME to my teaching name, and rewrite TEACHING_DESC as one sentence describing my teaching.\n" : "") +
+      "Also rewrite the short shelf descriptions in SHELF_INFO so they speak to my community. Keep the shelf names as they are.\n" +
+      "The script has a hidden list called PLAYBOOK with the selling and writing rules that get added to prompts. " + (teaching ? "Rewrite the HOW PEOPLE BUY and HOW TO SELL WITHOUT THE ICK parts so they match my teaching, and keep the HOW TO WRITE THE POST part as it is, adding my voice notes to it." : "Add my voice notes to the HOW TO WRITE THE POST part and keep the rest.") + " Keep it as a valid list of text lines.\n" +
+      common +
       "- If it's too much for one go, work through it one shelf at a time and keep going until every post is done. Tell me when you've finished.\n" +
-      "- Keep every id, shelf, category, field name and the rest of the file exactly as it is. Only change the text inside the fields I listed.\n" +
-      "- Keep the emojis, the line breaks and any [brackets] that I'll fill in when I post.\n" +
+      "- Only change the text inside the post fields I listed, plus the branding above.\n" +
+      "- Keep the emojis, the bold letters, the line breaks and any [brackets] that I'll fill in when I post.\n" +
       "- Plain, friendly words, like I'm talking to a friend. No jargon, no em dashes, no hashtags, no markdown.\n" +
       "- Don't add or remove posts.\n" +
-      "- Make sure the file still opens and works in a browser.\n" +
-      "- Also rewrite the short shelf descriptions in SHELF_INFO so they speak to my community. Keep the shelf names as they are.\n" +
-      "- The script also has a hidden list called PLAYBOOK with the selling and writing rules that get added to prompts. " + (teaching ? "Rewrite the HOW PEOPLE BUY and HOW TO SELL WITHOUT THE ICK parts so they match my teaching, and keep the HOW TO WRITE THE POST part as it is, adding my voice notes to it." : "Add my voice notes to the HOW TO WRITE THE POST part and keep the rest.") + " Keep it as a valid list of text lines.\n" +
       "- Follow these rules when you rewrite the posts:\n\n" + (preview ? "[the full " + TEACHING_NAME + " rules are added when you copy]" : PLAYBOOK);
   }
 
   function renderMake() {
     if (EDITION === "premium") { renderTeaser(); return; }
     if ($("mkWho")) { $("mkOut").textContent = mkPrompt(true); return; }
+    function fieldHtml(f) {
+      var input = f.area ? '<textarea id="' + f.id + '" placeholder="' + esc(f.ph) + '"></textarea>' : '<input id="' + f.id + '" type="text" placeholder="' + esc(f.ph) + '">';
+      return '<div class="field"><label for="' + f.id + '">' + esc(f.label) + '</label><span class="hint">' + esc(f.hint) + '</span>' + input + '</div>';
+    }
     $("mkBody").innerHTML =
-      '<div class="panel"><h3><span class="step-num">1</span> Tell it about you</h3>' +
-      '<p class="sub">Answer like you’re explaining your work to a friend. The more you share, the more every post will sound like you. Nothing you type is saved or sent anywhere. It only builds your prompt.</p>' +
+      '<div class="panel"><h3><span class="step-num">1</span> Choose how much to change</h3>' +
+      '<p class="sub">Use it as is with your own branding, or rebrand it completely so every post is written for your people.</p>' +
+      '<div class="toggle" role="group" aria-label="How much to change"><button type="button" data-mk="light">Just rebrand it</button><button type="button" data-mk="full" class="on">Completely rebrand it</button></div>' +
+      '<p class="small" id="mkModeNote"></p></div>' +
+      '<div class="panel"><h3><span class="step-num">2</span> Your branding</h3>' +
+      BRAND_FIELDS.map(fieldHtml).join("") + '</div>' +
+      '<div class="panel" id="mkAbout"><h3><span class="step-num">3</span> Tell it about you</h3>' +
+      '<p class="sub">Answer like you\u2019re explaining your work to a friend. The more you share, the more every post will sound like you. Nothing you type is saved or sent anywhere. It only builds your prompt.</p>' +
       MK_FIELDS.map(function (f) {
         var input = f.area ? '<textarea id="' + f.id + '" placeholder="' + esc(f.ph) + '"></textarea>' : '<input id="' + f.id + '" type="text" placeholder="' + esc(f.ph) + '">';
         return '<div class="field"><label for="' + f.id + '">' + esc(f.label) + '</label><span class="hint">' + esc(f.hint) + '</span>' + input + '</div>';
       }).join("") + '</div>' +
-      '<div class="panel"><h3><span class="step-num">2</span> Copy your prompt and the vault file</h3>' +
+      '<div class="panel"><h3><span class="step-num" data-n="copy">4</span> Copy your prompt and the vault file</h3>' +
       '<p class="sub">Your prompt fills in as you type. Then save this vault file to your computer, so you can attach it.</p>' +
       '<div class="out" id="mkOut"></div>' +
       '<div class="btn-row"><button class="btn primary" type="button" id="mkCopy">Copy the prompt</button>' +
       '<a class="btn" href="' + esc(location.pathname.split("/").pop() || "index.html") + '" download="engagement-vault.html">Save the vault file</a></div>' +
       '<p class="small">If Save doesn’t download anything, use your browser’s File menu and choose Save Page As, then pick the HTML only option.</p></div>' +
-      '<div class="panel"><h3><span class="step-num">3</span> Let Claude rewrite it</h3><ol class="steps">' +
+      '<div class="panel"><h3><span class="step-num" data-n="ai">5</span> Let Claude make it yours</h3><ol class="steps">' +
       '<li><span>Open <b>Claude</b> in a new chat. In settings, make sure <b>file creation</b> is turned on.</span></li>' +
       '<li><span>Attach the <b>engagement-vault.html</b> file you saved.</span></li>' +
       '<li><span>Paste <b>your prompt</b> and send it.</span></li>' +
       '<li><span>If it stops partway, just reply <b>keep going</b>.</span></li>' +
       '<li><span>Download the file it gives back and open it in your browser. That’s your vault.</span></li></ol>' +
       '<p class="small">ChatGPT works too, as long as it can edit files. Read a few posts before you use them, and tweak anything that doesn’t sound like you.</p></div>' +
-      '<div class="panel"><h3>Share it with your own members</h3>' +
-      '<p class="sub">Host your vault for free on GitHub Pages and link it in a classroom or a pinned post. Put it in a paid tier and it becomes a reason to upgrade. Your copy won’t show this Make it yours page, so your members only see the posts.</p></div>';
-    MK_FIELDS.forEach(function (f) { $(f.id).addEventListener("input", function () { mk[f.key] = this.value; $("mkOut").textContent = mkPrompt(true); }); });
+      (EDITION === "vip" ?
+        '<div class="panel"><h3>Your sharing rights</h3>' +
+        '<p class="sub">As a VIP, you can share your vault in your own community as a perk for your premium or VIP upgrade. Your members can use it as is with their own branding, or rebrand it completely with their own colors and content, using this same Make it yours page.</p>' +
+        '<p class="sub">Host it for free on GitHub Pages and link it in the classroom for that tier.</p>' +
+        '<p class="sub">\u2728 More Claude tools are on the way for VIPs, and you\u2019ll be able to rebrand and share them the same way.</p></div>'
+      :
+        '<div class="panel"><h3>Use it as your own</h3>' +
+        '<p class="sub">Once it\u2019s rewritten, it\u2019s yours to use in your own community. Host it for free on GitHub Pages and link it in a classroom or a pinned post.</p></div>');
+    MK_FIELDS.concat(BRAND_FIELDS).forEach(function (f) { $(f.id).addEventListener("input", function () { mk[f.key] = this.value; $("mkOut").textContent = mkPrompt(true); }); });
+    function setMode(m) {
+      mkMode = m;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-mk]"), function (b) { b.classList.toggle("on", b.getAttribute("data-mk") === m); });
+      $("mkAbout").hidden = m === "light";
+      $("mkModeNote").textContent = m === "light" ? "Your posts stay as they are. Claude changes the vault name, the colors, the lessons name and your community name, and removes every mention of She Promotes\u2122." : "Claude rewrites every post with your essence, for your ideal clients, and changes your branding too.";
+      document.querySelector('[data-n="copy"]').textContent = m === "light" ? "3" : "4";
+      document.querySelector('[data-n="ai"]').textContent = m === "light" ? "4" : "5";
+      $("mkOut").textContent = mkPrompt(true);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-mk]"), function (b) { b.addEventListener("click", function () { setMode(b.getAttribute("data-mk")); }); });
+    setMode(mkMode);
     $("mkCopy").addEventListener("click", function () { copy(mkPrompt(), this, "Prompt copied"); });
     $("mkOut").textContent = mkPrompt(true);
   }
@@ -1210,12 +1272,14 @@ const WEEK_RITUALS = {
   function renderTeaser() {
     $("mkBody").innerHTML =
       '<div class="panel"><h3>Make it yours with VIP</h3>' +
-      '<p class="sub">As a VIP, you get a version of this vault you can rewrite for your own community in about 15 minutes.</p>' +
+      '<p class="sub">VIPs get a version of this vault they can customize with their own essence, for their own ideal clients, in about 15 minutes.</p>' +
       '<ul class="teaser-list">' +
-      '<li>Every post rewritten for your members and your niche</li>' +
-      '<li>Written in your voice, using your own posts as the guide</li>' +
+      '<li>The raw file, plus easy step by step instructions to customize it</li>' +
+      '<li>Use it as is with your own branding, or completely rebrand it with your colors and content</li>' +
+      '<li>Every post rewritten with your essence, in your voice, for your ideal clients</li>' +
       '<li>Your expertise and signature teaching woven through every lesson</li>' +
-      '<li>Yours to share with your own members, and even put in a paid tier</li></ul>' +
+      '<li>Rights to share it in your community as a perk for your premium or VIP upgrade, where your members can rebrand it too</li>' +
+      '<li>More Claude tools on the way that you can rebrand the same way</li></ul>' +
       '<p class="sub">You tell it about you, copy one prompt, and Claude does the rewriting.</p></div>' +
       '<div class="panel"><h3>Everything else in VIP</h3>' +
       '<p class="sub">VIP includes everything in Premium, plus:</p>' +
@@ -1224,7 +1288,7 @@ const WEEK_RITUALS = {
       '<li>Your own classroom inside She Promotes™ for your offers and your community</li>' +
       '<li>A VIP Spotlight in the She Promotes™ Directory</li>' +
       '<li>Member Spotlights in the community</li>' +
-      '<li>Claude tools you can brand as your own and use in your community</li></ul>' +
+      '<li>More Claude tools you can rebrand as your own and share in your community, as they\u2019re released</li></ul>' +
       '<h3 style="font-size:20px;margin-top:6px">Yearly VIP bonus</h3>' +
       '<p class="sub">Your Money Blueprint Map plus a 30 day business strategy action plan, covering your website, your community and your client journey.</p></div>' +
       '<div class="panel price-panel"><div class="price-row">' +
@@ -1254,8 +1318,9 @@ const WEEK_RITUALS = {
   /* ---------- start ---------- */
   if (EDITION === "vip") $("heroNote").innerHTML = 'New here? <button type="button" data-go="make-it-yours">Start with Make it yours</button> to rewrite the whole vault for your people.';
   else if (EDITION === "premium") $("heroNote").innerHTML = 'Want the whole vault rewritten for your own community? <button type="button" data-go="make-it-yours">See what VIPs get</button>, from $7 a month.';
-  else $("heroNote").hidden = true;
-  $("footCredit").textContent = EDITION === "vip" ? "Made for She Promotes\u2122 VIPs" : (EDITION === "premium" ? "Made for She Promotes\u2122 members" : "Made with the She Promotes\u2122 Engagement Vault");
+  else $("heroNote").innerHTML = 'New here? <button type="button" data-go="make-it-yours">Start with Make it yours</button> to rebrand the whole vault for your people.';
+  $("brandName").innerHTML = nameHtml(VAULT_NAME, false);
+  $("footCredit").textContent = EDITION === "custom" ? COMMUNITY_NAME : EDITION === "vip" ? "Made for She Promotes\u2122 VIPs" : (EDITION === "premium" ? "Made for She Promotes\u2122 members" : "Made with the She Promotes\u2122 Engagement Vault");
   function fromHash() { var h = (location.hash || "").replace("#", ""); setView(h || "browse", true); }
   window.addEventListener("hashchange", fromHash);
   fromHash();
