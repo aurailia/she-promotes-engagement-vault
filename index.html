@@ -882,11 +882,9 @@ const WEEK_RITUALS = {
 
     if (!p.kind) {
       html += '<div class="sec"><div class="label">Make this post yours</div>' +
-        '<p class="intro">Copy a prompt that rewrites this post for your people, then paste it into Claude or ChatGPT. Everything here is optional.</p>' +
-        '<div class="field"><label for="mcAbout">Your community or business</label><input id="mcAbout" type="text" placeholder="e.g. a community for new hypnotherapists finding their first clients" value="' + esc(store.about) + '"></div>' +
-        '<div class="field"><label for="mcChange">Anything you want changed?</label><input id="mcChange" type="text" placeholder="e.g. make it shorter, give it a holiday feel, mention my live call Friday" value="' + esc(mcChange) + '"></div>' +
+        '<p class="intro">Tap copy, then paste it into Claude or ChatGPT. Your AI fills in the [brackets] with what it knows about you, and asks you anything it doesn\u2019t know, like which offer you\u2019re promoting.</p>' +
         '<label class="checkrow"><input id="mcTeach" type="checkbox"' + (mcTeach ? " checked" : "") + '> Weave in a ' + esc(TEACHING_NAME) + ' lesson</label>' +
-        '<button class="btn primary" type="button" data-act="copy-custom">Copy the prompt</button></div>';
+        '<button class="btn primary" type="button" data-act="copy-custom">Copy for my AI</button></div>';
     }
 
     html += '<div class="sec" id="daySec"><div class="label">Put it on a day</div>' +
@@ -954,13 +952,13 @@ const WEEK_RITUALS = {
 
   function customPrompt(p) {
     var body = postText(p, modalMode) + (p.poll ? "\n\nPoll options:\n" + p.pollOptions.join("\n") : "");
-    var about = (store.about || "").trim(), change = mcChange.trim();
-    return "Rewrite the community post below for my community, in my voice.\n\n" +
-      "About my community: " + (about || "[tell it who your community is for and what you help them with]") + "\n" +
-      (change ? "What I want changed: " + change + "\n" : "") +
-      (mcTeach ? "Also weave in a short " + TEACHING_NAME + " lesson. " + TEACHING_NAME + " is " + TEACHING_DESC + ". Add a few sentences under the hook that teach the selling rule that fits this post best, using the rules below.\n" : "") +
-      "\nKeep the hook and the question at the end just as strong, so people still comment. Keep the emojis and line breaks. Fill in any [brackets] with my details where you can, and leave the rest for me. Use plain, friendly words, like I'm talking to a friend. No jargon, no em dashes, no hashtags, no markdown. Don't assume my members are women unless I say so. Give me the finished post, ready to copy.\n\n" +
-      (mcTeach ? playbookBlock() + "\n" : "") + "Here's the post:\n\n" + body;
+    return "I want to share the community post below in my own community. Please make it mine.\n\n" +
+      "1. Use what you already know about me and my business to fill in every [bracket].\n" +
+      "2. If there's anything you don't know, ask me before you write. If the post talks about an offer, ask me which offer I'm promoting. Ask all your questions at once, short and simple, and wait for my answers. Don't guess or make anything up.\n" +
+      "3. Then rewrite the post for my people, in my voice. Keep the hook and the question at the end just as strong, so people still comment. Keep the emojis and line breaks.\n" +
+      (mcTeach ? "4. Weave in a short " + TEACHING_NAME + " lesson. " + TEACHING_NAME + " is " + TEACHING_DESC + ". Add a few sentences under the hook that teach the selling rule that fits this post best, using the rules below.\n" : "") +
+      "\nUse plain, friendly words, like I'm talking to a friend. No jargon, no em dashes, no hashtags, no markdown. Don't assume my members are women unless I say so. Give me the finished post, ready to copy." +
+      (mcTeach ? playbookBlock() : "") + "\n\nHere's the post:\n\n" + body;
   }
 
   function communityPrompt(p, preview) {
