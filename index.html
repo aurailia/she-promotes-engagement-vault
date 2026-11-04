@@ -836,6 +836,7 @@ const WEEK_RITUALS = {
 
   function openModal(id) {
     var p = byId(id); if (!p) return;
+    var fresh = $("modal").hidden || openId !== id;
     openId = id;
     var used = store.used[id];
     var html = '<div class="m-tag">' + esc(shelfName(p.shelf)) + ' · ' + esc(p.category) + '</div>' +
@@ -894,6 +895,7 @@ const WEEK_RITUALS = {
     $("modalBody").innerHTML = html;
     $("modal").hidden = false;
     document.body.style.overflow = "hidden";
+    if (fresh) { $("modal").scrollTop = 0; var mb = $("closeModal"); if (mb) try { mb.focus({ preventScroll: true }); } catch (e) {} }
   }
   function usedBtn(used) { return '<button class="btn' + (used ? " on" : "") + '" type="button" data-act="used">' + (used ? "✓ Used " + fmt(used) : "I used this") + '</button>'; }
   function favBtn(id) { return '<button class="btn' + (isFav(id) ? " on" : "") + '" type="button" data-act="fav">' + (isFav(id) ? "♥ Saved" : "♡ Save") + '</button>'; }
