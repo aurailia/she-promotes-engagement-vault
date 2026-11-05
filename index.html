@@ -138,6 +138,21 @@
   .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
   /* Grid of posts */
+  .goals { margin: 4px 0 2px; }
+  .goals-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin-bottom: 9px; }
+  .goal-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .goal { font: inherit; font-size: 13.5px; font-weight: 500; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; cursor: pointer; text-align: left; }
+  .goal:hover { border-color: var(--gold); }
+  .goal.active { color: var(--on-gold); background: var(--gold); border-color: var(--gold); font-weight: 600; }
+  .goal.clear { background: transparent; color: var(--muted); }
+  .goal-select { display: none; width: 100%; font: inherit; font-size: 15px; color: var(--fg); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; padding: 12px 40px 12px 14px; appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px; background-repeat: no-repeat; }
+  .goal-select option { color: #24101f; background: #fff; }
+  @media (max-width: 640px) { .goal-chips { display: none; } .goal-select { display: block; } }
+  .group-head { grid-column: 1 / -1; margin: 18px 0 2px; font-family: "Cormorant Garamond", Georgia, serif; font-size: 22px; font-weight: 600; color: var(--fg); }
+  .grid .group-head { scroll-margin-top: 24px; }
+  @media (max-width: 860px) { .grid .group-head { scroll-margin-top: 84px; } }
+  .group-n { font-family: Inter, system-ui, sans-serif; font-size: 12px; font-weight: 600; color: var(--faint); margin-left: 10px; vertical-align: middle; }
+  .group-head small { display: block; font-family: Inter, system-ui, sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--blush); margin-bottom: 2px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
   .card {
     position: relative; text-align: left; color: inherit;
@@ -145,7 +160,7 @@
     padding: 20px; min-height: 180px;
     background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
     cursor: pointer; transition: border-color .2s, transform .2s, background .2s;
-    content-visibility: auto; contain-intrinsic-size: 200px;
+    
   }
   .card:hover { border-color: var(--line-strong); background: var(--surface-2); transform: translateY(-2px); }
   .card.used { border-color: rgba(111,216,200,0.45); }
@@ -339,6 +354,7 @@
       </header>
       <div class="controls">
         <div class="search"><input id="search" type="search" placeholder="Search welcome, poll, pricing, collab, freebie..." aria-label="Search posts"></div>
+        <div class="goals" id="goalsWrap"><div class="goals-label">What do you want to do today?</div><div class="goal-chips" id="goals"></div><select class="goal-select" id="goalSelect" aria-label="What do you want to do today?"></select></div>
         <div class="chips" id="cats"></div>
         <div class="toolrow">
           <button class="btn" type="button" id="surprise">&#10022; Surprise me</button>
@@ -863,7 +879,7 @@ const WEEK_RITUALS = {
     if (v === "make-it-yours") renderMake();
     renderNav();
     setMenu(false);
-    if (!fromHash) { try { history.replaceState(null, "", "#" + (v === "browse" ? shelfHash(activeShelf) : v)); } catch (e) {} window.scrollTo(0, 0); }
+    if (!fromHash) { try { history.replaceState(null, "", "#" + (v === "browse" ? (activeGoal && activeShelf === "All" ? goalSlug(activeGoal) : shelfHash(activeShelf)) : v)); } catch (e) {} window.scrollTo(0, 0); }
   }
 
   function setMenu(open) { $("rail").classList.toggle("open", open); $("scrim").classList.toggle("open", open); }
@@ -876,13 +892,68 @@ const WEEK_RITUALS = {
     var g = e.target.closest("[data-go]");
     if (g) { setView(g.getAttribute("data-go")); return; }
     var s = e.target.closest("[data-shelf]");
-    if (s) { activeShelf = s.getAttribute("data-shelf"); activeCat = null; setView("browse"); return; }
+    if (s) { activeShelf = s.getAttribute("data-shelf"); activeCat = null; activeGoal = null; setView("browse"); return; }
   });
 
   /* ---------- browse ---------- */
+  var GOALS = [
+    { label: "\uD83D\uDC4B Welcome new members", desc: "Posts to greet new people and help them feel at home in their first few days.", ids: [1, 2, 7, 38] },
+    { label: "\uD83D\uDCAC Get quiet members talking", desc: "Easy posts people can answer in seconds, so your quiet members finally comment.", ids: [8, 12, 13, 14, 15, 16, 181, 122, 172] },
+    { label: "\uD83C\uDFB2 Have some fun", desc: "Games, AI play and silly questions that get everyone laughing and commenting.", ids: [9, 10, 11, 17, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169] },
+    { label: "\uD83E\uDD17 Help members get to know each other", desc: "Posts that help your members meet and start real conversations.", ids: [3, 4, 5, 6, 29, 30, 173, 170, 171] },
+    { label: "\uD83E\uDD1D Help members team up", desc: "Posts for collabs, guest spots, skill swaps and finding the right help.", ids: [26, 27, 117, 118, 182, 183] },
+    { label: "\uD83D\uDC97 Help members lift each other up", desc: "Shoutouts, thank yous and boosts that build trust and belonging.", ids: [28, 31, 184, 35, 186, 120] },
+    { label: "\uD83D\uDCE3 Help members share their offers", desc: "Promo days, link threads and posts that help members get seen.", ids: [113, 114, 119, 188, 189, 111, 116, 112, 18, 19, 20, 21, 22, 23, 24, 25] },
+    { label: "\uD83C\uDFE1 Promote my community", desc: "Posts and prompts to share your community and what's new inside it.", ids: [91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 115, 187, 190] },
+    { label: "\uD83C\uDFC6 Celebrate wins", desc: "Wins, milestones, spotlights and celebrations, big and tiny.", ids: [32, 33, 34, 36, 37, 89, 124, 125, 126, 145] },
+    { label: "\uD83C\uDF3F Support my clients' growth", desc: "Check-ins, reflection, practice and accountability for your clients.", ids: [121, 123, 127, 128, 129, 130, 131, 132, 136, 137, 138] },
+    { label: "\uD83C\uDF19 Moon, seasons and cosmic days", desc: "New moons, full moons, retrogrades, seasons and solar returns.", ids: [139, 147, 140, 148, 141, 149, 142, 150, 143, 151, 144, 152, 145, 153, 146, 154] },
+    { label: "\uD83C\uDF84 Plan a holiday or sale", desc: "Thanksgiving, Black Friday, giving season and the end of the year.", ids: [81, 82, 83, 84, 85, 86, 87, 88, 89, 90] },
+    { label: "\uD83D\uDCE2 Make an announcement", desc: "Launches, upgrades, live calls, replays, countdowns and feedback.", ids: [39, 40, 41, 42, 43, 44, 185, 133, 134, 135] },
+    { label: "\u2728 Learn to sell without the ick", desc: "Short selling lessons you can share with your members.", shelf: "She Sells" },
+    { label: "\uD83D\uDCC8 Grow my community", desc: "Tips for engagement, onboarding and your path from free to paid.", shelf: "Grow Your Skool" }
+  ];
+  var activeGoal = null;
+  function goalSlug(g) { return "do-" + slug(g.label.replace(/^[^A-Za-z]+/, "")); }
+  function goalPosts(g) {
+    var avail = shelfPosts();
+    if (g.shelf) return avail.filter(function (p) { return p.shelf === g.shelf; });
+    var set = {}; g.ids.forEach(function (id) { set[id] = true; });
+    return avail.filter(function (p) { return set[p.id]; });
+  }
+  function renderGoals() {
+    var wrap = $("goalsWrap");
+    wrap.hidden = activeShelf !== "All";
+    if (wrap.hidden) return;
+    $("goals").innerHTML = GOALS.map(function (g, i) {
+      if (!goalPosts(g).length) return "";
+      return '<button class="goal' + (activeGoal === g ? " active" : "") + '" type="button" data-goal="' + i + '">' + esc(g.label) + '</button>';
+    }).join("") + (activeGoal ? '<button class="goal clear" type="button" data-goal="clear">\u2715 Show everything</button>' : "");
+    $("goalSelect").innerHTML = '<option value="clear">' + (activeGoal ? "\u2715 Show everything" : "Pick one...") + '</option>' + GOALS.map(function (g, i) {
+      if (!goalPosts(g).length) return "";
+      return '<option value="' + i + '"' + (activeGoal === g ? " selected" : "") + '>' + esc(g.label) + '</option>';
+    }).join("");
+  }
+  $("goalSelect").addEventListener("change", function () {
+    var v = this.value;
+    activeGoal = v === "clear" ? null : GOALS[+v];
+    renderPosts();
+    try { history.replaceState(null, "", "#" + (activeGoal ? goalSlug(activeGoal) : "browse")); } catch (err) {}
+    if (activeGoal) { var gh = document.querySelector(".group-head"); if (gh) gh.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  });
+  $("goals").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-goal]"); if (!b) return;
+    var v = b.getAttribute("data-goal");
+    activeGoal = (v === "clear" || activeGoal === GOALS[+v]) ? null : GOALS[+v];
+    renderPosts();
+    try { history.replaceState(null, "", "#" + (activeGoal ? goalSlug(activeGoal) : "browse")); } catch (err) {}
+    if (activeGoal && window.innerWidth < 700) { var gh = document.querySelector(".group-head"); if (gh) gh.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  });
+
   function filtered() {
     var q = ($("search").value || "").toLowerCase().trim();
     var list = shelfPosts();
+    if (activeGoal && activeShelf === "All") list = goalPosts(activeGoal);
     if (activeShelf === "Saved") list = POSTS.filter(function (p) { return isFav(p.id); });
     else if (activeShelf !== "All") list = POSTS.filter(function (p) { return p.shelf === activeShelf; });
     if (activeCat) list = list.filter(function (p) { return p.category === activeCat; });
@@ -909,9 +980,20 @@ const WEEK_RITUALS = {
     POSTS.forEach(function (p) { if (p.shelf === activeShelf && cats.indexOf(p.category) === -1) cats.push(p.category); });
     wrap.innerHTML = cats.map(function (c) { return '<button class="chip' + (c === activeCat ? " active" : "") + '" type="button" data-cat="' + esc(c) + '">' + esc(c) + '</button>'; }).join("");
   }
+  function jumpTo(el) {
+    var off = window.innerWidth <= 860 ? 84 : 24;
+    var y = el.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || 0) - off;
+    var start = window.pageYOffset;
+    try { window.scrollTo({ top: y, behavior: "smooth" }); } catch (e1) { window.scrollTo(0, y); }
+    setTimeout(function () { if (Math.abs(window.pageYOffset - start) < 2) { try { el.scrollIntoView({ block: "start" }); } catch (e2) {} } }, 150);
+  }
   $("cats").addEventListener("click", function (e) {
     var c = e.target.closest("[data-cat]"); if (!c) return;
-    var v = c.getAttribute("data-cat"); activeCat = activeCat === v ? null : v; renderPosts();
+    var v = c.getAttribute("data-cat");
+    if (activeCat) { activeCat = null; renderPosts(); }
+    var heads = document.querySelectorAll("[data-cathead]"), target = null;
+    for (var i = 0; i < heads.length; i++) if (heads[i].getAttribute("data-cathead") === v) target = heads[i];
+    if (target) jumpTo(target);
   });
 
   var SHELF_INFO = {
@@ -942,7 +1024,8 @@ const WEEK_RITUALS = {
     $("shelfEyebrow").textContent = s === "All" ? "Copy, fill in the [brackets], post" : n + (n === 1 ? " post" : " posts");
     $("shelfTitle").innerHTML = s === "All" ? nameHtml(VAULT_NAME, true) : (s === "Saved" ? 'Your <em>Saved</em> posts' : esc(shelfName(s)));
     $("shelfDesc").textContent = SHELF_INFO[s] || SHELF_INFO.All;
-    $("heroNote").hidden = s !== "All";
+    if (s === "All" && activeGoal) { $("shelfEyebrow").textContent = "What do you want to do today?"; $("shelfTitle").textContent = activeGoal.label.replace(/^[^A-Za-z]+/, ""); $("shelfDesc").textContent = activeGoal.desc; }
+    $("heroNote").hidden = s !== "All" || !!activeGoal;
     $("shelfLink").hidden = s === "All" || s === "Saved";
   }
 
@@ -951,7 +1034,16 @@ const WEEK_RITUALS = {
     renderCats();
     var list = filtered();
     $("resultMeta").textContent = list.length + (list.length === 1 ? " post" : " posts");
-    $("grid").innerHTML = list.length ? list.map(cardHtml).join("") : '<div class="empty">Nothing here yet. Try another shelf or search.</div>';
+    renderGoals();
+    var html;
+    if (!list.length) html = '<div class="empty">Nothing here yet. Try another shelf or search.</div>';
+    else if ((activeGoal && activeShelf === "All") || (activeShelf !== "All" && activeShelf !== "Saved" && !activeCat)) {
+      var inShelf = activeShelf !== "All";
+      var groups = [], byKey = {};
+      list.forEach(function (p) { var k = p.shelf + "|" + p.category; if (!byKey[k]) { byKey[k] = { shelf: p.shelf, cat: p.category, posts: [] }; groups.push(byKey[k]); } byKey[k].posts.push(p); });
+      html = groups.map(function (g) { return '<h3 class="group-head" data-cathead="' + esc(g.cat) + '">' + (inShelf ? "" : '<small>' + esc(shelfName(g.shelf)) + '</small>') + esc(g.cat) + '<span class="group-n">' + g.posts.length + '</span></h3>' + g.posts.map(cardHtml).join(""); }).join("");
+    } else html = list.map(cardHtml).join("");
+    $("grid").innerHTML = html;
   }
   $("search").addEventListener("input", renderPosts);
   $("surprise").addEventListener("click", function () { var l = filtered(); if (!l.length) l = shelfPosts(); openModal(l[Math.floor(Math.random() * l.length)].id); });
@@ -1527,6 +1619,8 @@ const WEEK_RITUALS = {
   $("footCredit").textContent = EDITION === "custom" ? COMMUNITY_NAME : EDITION === "vip" ? "Made for She Promotes\u2122 VIPs" : (EDITION === "premium" ? "Made for She Promotes\u2122 members" : "Made with the She Promotes\u2122 Engagement Vault");
   function fromHash() {
     var h = decodeURIComponent((location.hash || "").replace("#", "")).toLowerCase();
+    activeGoal = null;
+    if (h.indexOf("do-") === 0) { for (var gi = 0; gi < GOALS.length; gi++) if (goalSlug(GOALS[gi]) === h) activeGoal = GOALS[gi]; if (activeGoal) { if (!goalPosts(activeGoal).length) { store.ctype = store.ctype === "client" ? "promo" : "client"; save(); renderCtype(); } activeShelf = "All"; activeCat = null; setView("browse", true); return; } }
     var s = shelfFromSlug(h);
     if (s) {
       if (s !== "Saved" && !shown(s)) { store.ctype = store.ctype === "client" ? "promo" : "client"; save(); renderCtype(); }
