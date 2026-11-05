@@ -1510,7 +1510,7 @@ const WEEK_RITUALS = {
 
   /* ---------- start ---------- */
   if (EDITION === "vip") $("heroNote").innerHTML = 'New here? <button type="button" data-go="make-it-yours">Start with Make it yours</button> to rewrite the whole vault for your people.';
-  else if (EDITION === "premium") $("heroNote").innerHTML = 'Want the whole vault rewritten for your own community? <button type="button" data-go="make-it-yours">See what VIPs get</button>, from $7 a month.';
+  else if (EDITION === "premium") $("heroNote").innerHTML = 'Want the whole vault rewritten for your own community? <button type="button" data-go="make-it-yours">See what VIPs get</button>.';
   else $("heroNote").innerHTML = 'New here? <button type="button" data-go="make-it-yours">Start with Make it yours</button> to rebrand the whole vault for your people.';
   $("brandName").innerHTML = nameHtml(VAULT_NAME, false);
   $("footCredit").textContent = EDITION === "custom" ? COMMUNITY_NAME : EDITION === "vip" ? "Made for She Promotes\u2122 VIPs" : (EDITION === "premium" ? "Made for She Promotes\u2122 members" : "Made with the She Promotes\u2122 Engagement Vault");
