@@ -101,6 +101,8 @@
   .hero h1 em { color: var(--blush); font-weight: 500; }
   .hero p { color: var(--muted); font-size: 16px; max-width: 62ch; margin: 0; }
   .hero-note { margin-top: 16px; font-size: 14px; color: var(--muted); }
+  .shelf-link { margin-top: 14px; background: transparent; border: 1px solid var(--line-strong); color: var(--gold-bright); font: inherit; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 7px 14px; cursor: pointer; }
+  .shelf-link:hover { border-color: var(--gold); }
   .hero-note button { background: none; border: none; color: var(--gold-bright); font-weight: 600; cursor: pointer; padding: 0; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 
   /* Controls */
@@ -333,6 +335,7 @@
         <h1 id="shelfTitle">The Engagement <em>Vault</em></h1>
         <p id="shelfDesc">Posts for your community that get people commenting, connecting and sharing their offers. Most come in two versions, just for fun or with a sales lesson woven in, plus a GIF idea and an image prompt.</p>
         <div class="hero-note" id="heroNote"></div>
+        <button class="shelf-link" id="shelfLink" type="button" hidden>&#128279; Copy link to this shelf</button>
       </header>
       <div class="controls">
         <div class="search"><input id="search" type="search" placeholder="Search welcome, poll, pricing, collab, freebie..." aria-label="Search posts"></div>
@@ -737,6 +740,13 @@ const WEEK_RITUALS = {
   var ALL = POSTS.concat(RITUAL_POSTS);
   function byId(id) { for (var i = 0; i < ALL.length; i++) if (ALL[i].id === id) return ALL[i]; return null; }
   function shelfName(s) { return SHELF_LABEL[s] || s; }
+  function slug(s) { return String(s).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); }
+  function shelfHash(s) { return s === "All" ? "browse" : s === "Saved" ? "saved" : slug(shelfName(s)); }
+  function shelfFromSlug(h) {
+    if (h === "saved") return "Saved";
+    for (var i = 0; i < SHELF_ORDER.length; i++) { var s = SHELF_ORDER[i]; if (slug(s) === h || slug(shelfName(s)) === h) return s; }
+    return null;
+  }
 
   /* ---------- per-viewer storage ---------- */
   var KEY = "engagement_vault_v2";
@@ -842,7 +852,7 @@ const WEEK_RITUALS = {
     if (v === "make-it-yours") renderMake();
     renderNav();
     setMenu(false);
-    if (!fromHash) { try { history.replaceState(null, "", "#" + v); } catch (e) {} window.scrollTo(0, 0); }
+    if (!fromHash) { try { history.replaceState(null, "", "#" + (v === "browse" ? shelfHash(activeShelf) : v)); } catch (e) {} window.scrollTo(0, 0); }
   }
 
   function setMenu(open) { $("rail").classList.toggle("open", open); $("scrim").classList.toggle("open", open); }
@@ -922,6 +932,7 @@ const WEEK_RITUALS = {
     $("shelfTitle").innerHTML = s === "All" ? nameHtml(VAULT_NAME, true) : (s === "Saved" ? 'Your <em>Saved</em> posts' : esc(shelfName(s)));
     $("shelfDesc").textContent = SHELF_INFO[s] || SHELF_INFO.All;
     $("heroNote").hidden = s !== "All";
+    $("shelfLink").hidden = s === "All" || s === "Saved";
   }
 
   function renderPosts() {
@@ -1503,7 +1514,20 @@ const WEEK_RITUALS = {
   else $("heroNote").innerHTML = 'New here? <button type="button" data-go="make-it-yours">Start with Make it yours</button> to rebrand the whole vault for your people.';
   $("brandName").innerHTML = nameHtml(VAULT_NAME, false);
   $("footCredit").textContent = EDITION === "custom" ? COMMUNITY_NAME : EDITION === "vip" ? "Made for She Promotes\u2122 VIPs" : (EDITION === "premium" ? "Made for She Promotes\u2122 members" : "Made with the She Promotes\u2122 Engagement Vault");
-  function fromHash() { var h = (location.hash || "").replace("#", ""); setView(h || "browse", true); }
+  function fromHash() {
+    var h = decodeURIComponent((location.hash || "").replace("#", "")).toLowerCase();
+    var s = shelfFromSlug(h);
+    if (s) {
+      if (s !== "Saved" && !shown(s)) { store.ctype = store.ctype === "client" ? "promo" : "client"; save(); renderCtype(); }
+      activeShelf = s; activeCat = null; setView("browse", true); window.scrollTo(0, 0); return;
+    }
+    if (h === "browse" || h === "all" || !h) { activeShelf = "All"; activeCat = null; }
+    setView(h || "browse", true);
+  }
+  $("shelfLink").addEventListener("click", function () {
+    var url = location.href.split("#")[0] + "#" + shelfHash(activeShelf);
+    copy(url, this, "Shelf link copied");
+  });
   window.addEventListener("hashchange", fromHash);
   fromHash();
 })();
