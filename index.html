@@ -1033,8 +1033,8 @@ const WEEK_RITUALS = {
 
     if (!p.kind) {
       html += '<div class="sec"><div class="label">Make this post yours</div>' +
-        '<p class="intro">Tap copy, then paste it into Claude or ChatGPT. Your AI fills in the [brackets] with what it knows about you, and asks you anything it doesn\u2019t know, like which offer you\u2019re promoting.</p>' +
-        '<label class="checkrow"><input id="mcTeach" type="checkbox"' + (mcTeach ? " checked" : "") + '> Weave in a ' + esc(TEACHING_NAME) + ' lesson</label>' +
+        '<p class="intro">Tap copy, then paste it into Claude or ChatGPT. Your AI fills in the [brackets] with what it knows about you, asks you a couple of quick questions to make it fit what\u2019s going on for you right now, and writes it in your own words.</p>' +
+        '<label class="checkrow"><input id="mcTeach" type="checkbox"' + (mcTeach ? " checked" : "") + '> Weave in ' + esc(TEACHING_NAME) + '</label>' +
         '<button class="btn primary" type="button" data-act="copy-custom">Copy for my AI</button></div>';
     }
 
@@ -1110,10 +1110,10 @@ const WEEK_RITUALS = {
   function customPrompt(p) {
     var body = postText(p, modalMode) + (p.poll ? "\n\nPoll options:\n" + p.pollOptions.join("\n") : "");
     return "I want to share the community post below in my own community. Please make it mine.\n\n" +
-      "1. Use what you already know about me and my business to fill in every [bracket].\n" +
-      "2. If there's anything you don't know, ask me before you write. If the post talks about an offer, ask me which offer I'm promoting. Ask all your questions at once, short and simple, and wait for my answers. Don't guess or make anything up.\n" +
-      "3. Then rewrite the post for my people, in my voice. Keep the hook and the question at the end just as strong, so people still comment. Keep the emojis and line breaks.\n" +
-      (mcTeach ? "4. Weave in a short " + TEACHING_NAME + " lesson. " + TEACHING_NAME + " is " + TEACHING_DESC + ". Add a few sentences under the hook that teach the selling rule that fits this post best, using the rules below.\n" : "") +
+      "1. Start with what you already know about me from our past chats, your memory of me and any projects or files I've shared: my business, my community, who I help and how I talk. Use it to fill in every [bracket].\n" +
+      "2. Before you write anything, ask me 2 or 3 quick questions so the post fits what's really going on for me right now. For example: who in my community this is for, what's happening in my business or community this week, or which offer to mention if the post talks about one. Also ask about any [bracket] you can't fill. Ask them all at once, short and simple, then wait for my answers. Don't guess or make anything up.\n" +
+      "3. Then rewrite the post for my people, in my voice. Use the words and phrases I actually use, the way I describe my work and my clients, and the way I write. If you don't have enough of my writing to go on, ask me to paste a post or two I've written. Keep the hook and the question at the end just as strong, so people still comment. Keep the emojis and line breaks.\n" +
+      (mcTeach ? "4. Weave a little of " + TEACHING_NAME + " into the post. " + TEACHING_NAME + " is " + TEACHING_DESC + ". Pick the one selling rule below that fits this post best and blend it into the post in a sentence or two, in my voice, so it reads like part of the post. Don't add a new section, header or title for it, don't call it a lesson, and don't name " + TEACHING_NAME + " or the rule in the post.\n" : "") +
       "\nUse plain, friendly words, like I'm talking to a friend. No jargon, no em dashes, no hashtags, no markdown. Don't assume my members are women unless I say so. Give me the finished post, ready to copy." +
       (mcTeach ? playbookBlock() : "") + "\n\nHere's the post:\n\n" + body;
   }
